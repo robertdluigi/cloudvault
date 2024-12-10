@@ -1,19 +1,19 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
-	_ "github.com/jackc/pgx/v5/stdlib" // PostgreSQL driver
-	"github.com/joho/godotenv"         // godotenv package for loading environment variables
+	"backend/pkg/models" // Import the models package where User and File are defined
+
+	"github.com/joho/godotenv" // godotenv package for loading environment variables
+	"gorm.io/driver/postgres"  // PostgreSQL GORM driver
+	"gorm.io/gorm"             // GORM ORM
 )
 
-var db *sql.DB
-
 // Initialize the database connection
-func initDB() (*sql.DB, error) {
+func initDB() (*gorm.DB, error) {
 	// Load environment variables from the .env file
 	if err := godotenv.Load(); err != nil {
 		return nil, fmt.Errorf("error loading .env file: %v", err)
@@ -25,34 +25,24 @@ func initDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("DATABASE_URL is not set in .env")
 	}
 
-	var err error
-	db, err = sql.Open("pgx", dsn)
+	// Open a new connection to the database using GORM
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %v", err)
 	}
 
 	return db, nil
 }
 
-// Create the users table
-func createTables() error {
-	// SQL statement to create the users table
-	query := `CREATE TABLE IF NOT EXISTS users (
-		id SERIAL PRIMARY KEY,
-		username VARCHAR(255) NOT NULL UNIQUE,
-		password VARCHAR(255) NOT NULL
-	);`
-
-	_, err := db.Exec(query)
+// Migrate models to create tables in the database
+func migrate(db *gorm.DB) error {
+	// Automatically create tables based on the models
+	err := db.AutoMigrate(&models.User{}, &models.File{})
 	if err != nil {
-		return fmt.Errorf("failed to create users table: %v", err)
+		return fmt.Errorf("failed to auto migrate models: %v", err)
 	}
 
-	log.Println("Users table created successfully!")
+	log.Println("Tables created successfully!")
 	return nil
 }
 
@@ -62,11 +52,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing database: %v", err)
 	}
-	defer db.Close()
 
-	// Create necessary tables
-	err = createTables()
+	// Migrate the models to the database
+	err = migrate(db)
 	if err != nil {
-		log.Fatalf("Error creating tables: %v", err)
+		log.Fatalf("Error migrating tables: %v", err)
 	}
 }

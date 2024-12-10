@@ -1,16 +1,16 @@
 package db
 
 import (
-	"database/sql"
 	"log"
 	"os"
 
-	_ "github.com/jackc/pgx/v5/stdlib" // PostgreSQL driver
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
-// InitDB initializes the database connection
+// InitDB initializes the database connection using GORM
 func InitDB() {
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
@@ -18,14 +18,10 @@ func InitDB() {
 	}
 
 	var err error
-	DB, err = sql.Open("pgx", dsn)
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	if err = DB.Ping(); err != nil {
-		log.Fatalf("Failed to ping database: %v", err)
-	}
-
-	log.Println("Connected to NeonDB successfully!")
+	log.Println("Connected to NeonDB successfully with GORM!")
 }

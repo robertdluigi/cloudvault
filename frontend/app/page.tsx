@@ -13,13 +13,13 @@ export default function Home() {
         </p>
         <div className="flex gap-6 mt-6 justify-center sm:justify-start">
           <Link
-            href="/login"
+            href="/auth/login"
             className="bg-transparent border-2 border-gray-300 text-gray-200 rounded-full px-6 py-3 text-lg font-semibold hover:bg-gray-600 hover:border-gray-500 transition-colors"
           >
             Login
           </Link>
           <Link
-            href="/signup"
+            href="/auth/signup"
             className="bg-transparent border-2 border-gray-300 text-gray-200 rounded-full px-6 py-3 text-lg font-semibold hover:bg-gray-600 hover:border-gray-500 transition-colors"
           >
             Sign Up

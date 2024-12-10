@@ -1,16 +1,31 @@
 package models
 
 import (
-	"backend/pkg/db" // Import the db package for DB access
+	"backend/pkg/db"
 	"log"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-// User represents a user in the system
+// User represents a user in the system with UUID as the primary key
 type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	ID        string `gorm:"type:uuid;primaryKey" json:"id"`
+	Username  string `gorm:"unique;not null" json:"username"`
+	Email     string `gorm:"unique;not null" json:"email"`
+	FirstName string `gorm:"not null" json:"first_name"`
+	LastName  string `gorm:"not null" json:"last_name"`
+	Password  string `json:"password"`
+}
+
+// BeforeCreate is a GORM hook to set the UUID before inserting a new record
+func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+	// Set UUID before creating the user
+	if u.ID == "" {
+		u.ID = uuid.New().String()
+	}
+	return nil
 }
 
 // Create inserts a new user into the database
@@ -20,26 +35,29 @@ func (u *User) Create() error {
 	if err != nil {
 		return err
 	}
+	u.Password = string(hashedPassword)
 
-	// SQL query to insert the user
-	query := `INSERT INTO users (username, password) VALUES ($1, $2)`
-	_, err = db.DB.Exec(query, u.Username, string(hashedPassword))
-	return err
+	// Use GORM to insert the user into the database
+	result := db.DB.Create(u)
+	return result.Error
 }
 
 // Authenticate checks the user's credentials against the database
 func (u *User) Authenticate() bool {
-	// SQL query to get the hashed password from the database
-	var hashedPassword string
-	query := `SELECT password FROM users WHERE username = $1`
-	err := db.DB.QueryRow(query, u.Username).Scan(&hashedPassword)
+	// Fetch the user from the database by username or email
+	var storedUser User
+	result := db.DB.Where("username = ? OR email = ?", u.Username, u.Email).First(&storedUser)
 
-	if err != nil {
-		log.Println("Error authenticating user:", err)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			log.Println("User not found:", u.Username)
+		} else {
+			log.Println("Error authenticating user:", result.Error)
+		}
 		return false
 	}
 
 	// Compare the provided password with the stored hashed password
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(u.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(u.Password))
 	return err == nil
 }

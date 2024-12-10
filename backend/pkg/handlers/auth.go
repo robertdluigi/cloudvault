@@ -8,8 +8,11 @@ import (
 
 // AuthRequest is the structure for incoming authentication requests
 type AuthRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
 }
 
 // SignUp handles user registration
@@ -20,10 +23,13 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create a new user
+	// Create a new user with additional fields
 	user := models.User{
-		Username: req.Username,
-		Password: req.Password,
+		Username:  req.Username,
+		Password:  req.Password,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
 	}
 
 	// Call Create method from the models package
@@ -47,13 +53,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// Create a user object for login
 	user := models.User{
-		Username: req.Username,
+		Email:    req.Email,
 		Password: req.Password,
 	}
 
 	// Call Authenticate method from the models package
 	if !user.Authenticate() {
-		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
