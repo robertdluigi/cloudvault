@@ -61,3 +61,10 @@ func (u *User) Authenticate() bool {
 	err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(u.Password))
 	return err == nil
 }
+
+// Create GetProfileByEmail function
+func GetProfileByEmail(email string) (User, error) {
+	var user User
+	result := db.DB.Where("email = ?", email).First(&user)
+	return user, result.Error
+}

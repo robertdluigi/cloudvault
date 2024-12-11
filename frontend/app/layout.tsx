@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
+import { UserContextProvider } from "@/context/UserContext";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
+    <UserContextProvider>
     <html lang="en">
       <body className="bg-[#0D1B2A] text-gray-900">
         <Header />
@@ -29,5 +30,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <Footer />
       </body>
     </html>
+    </UserContextProvider>
   );
 }

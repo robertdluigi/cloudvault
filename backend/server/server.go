@@ -1,6 +1,8 @@
 package server
 
 import (
+	// Import the auth package for the Validate function
+	"backend/pkg/auth"
 	"backend/pkg/db"       // Import the db package
 	"backend/pkg/handlers" // Import the handlers package
 	"log"
@@ -20,6 +22,7 @@ func Start() {
 	// Routes
 	router.HandleFunc("/api/v1/auth/signup", handlers.SignUp).Methods("POST")
 	router.HandleFunc("/api/v1/auth/login", handlers.Login).Methods("POST")
+	router.HandleFunc("/api/v1/auth/validate", auth.Validate).Methods("GET") // Add the validate route
 
 	// Configure CORS middleware
 	c := cors.New(cors.Options{

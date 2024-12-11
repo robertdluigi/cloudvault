@@ -1,15 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 import { login } from "@/lib/auth"; // Import the login function from auth.ts
-
+import { useRouter } from "next/navigation";
 export default function LoginFormDemo() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,8 +27,7 @@ export default function LoginFormDemo() {
 
       // Handle success
       console.log("Login successful:", response);
-      // Redirect or update the UI based on the response
-      // For example, you could store the JWT token or redirect to a different page
+      router.push("/dashboard");
     } catch (error: any) {
       // Handle error
       setErrorMessage(error.message || "Login failed. Please try again.");

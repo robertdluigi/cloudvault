@@ -1,7 +1,35 @@
+'use client';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { validateAuth } from "@/lib/auth"; // Import the validateAuth function
 import Link from "next/link";
 import { ReactNode } from "react";
-
+import { useUser } from "@/hooks/useUser";
 export default function DashboardLayout({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true); // To handle loading state
+  const { user, logoutUser } = useUser();
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await validateAuth(); // Await the validateAuth function to check if the user is authenticated
+      } catch (error) {
+        // If validation fails (e.g., no token or token is invalid), redirect to login page
+        router.push("/auth/login");
+        return;
+      } finally {
+        setLoading(false); // Stop loading once the auth validation is complete
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  // Show a loading state while authentication is being validated
+  if (loading) {
+    return <div>Loading...</div>; // You can customize this to show a spinner or some other loading UI
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -27,7 +55,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <main className="flex-1 p-8">
         {/* Header */}
         <header className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-semibold text-gray-800">Welcome back, User</h1>
+          <h1 className="text-3xl font-semibold text-gray-800">Welcome back, {user?.first_name}</h1>
           <div className="flex items-center gap-4">
             <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
               Upload File

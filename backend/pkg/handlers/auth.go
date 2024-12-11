@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"backend/pkg/auth"
 	"backend/pkg/models"
 	"encoding/json"
 	"net/http"
@@ -57,12 +58,30 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Password: req.Password,
 	}
 
-	// Call Authenticate method from the models package
+	// Authenticate the user
 	if !user.Authenticate() {
 		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
-	// Return success response
-	json.NewEncoder(w).Encode(map[string]string{"message": "Login successful"})
+	// Generate JWT token
+	token, err := auth.GenerateJWT(user.ID, user.Email)
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+
+	}
+
+	// Set token in a secure cookie
+	auth.SetTokenInCookie(w, token)
+
+	// Return success response with token
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message":   "Login successful",
+		"token":     token,
+		"username":  user.Username,
+		"lastName":  user.LastName,
+		"firstName": user.FirstName,
+	})
 }
