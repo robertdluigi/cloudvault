@@ -16,6 +16,7 @@ type UserEntity struct {
 	Email     string `gorm:"unique;not null" json:"email"`
 	FirstName string `gorm:"not null" json:"first_name"`
 	LastName  string `gorm:"not null" json:"last_name"`
+	Image     string `json:"image"`
 	Password  string `json:"password"`
 }
 
