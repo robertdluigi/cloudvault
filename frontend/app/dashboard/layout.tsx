@@ -5,6 +5,7 @@ import { validateAuth } from "@/lib/auth"; // Import the validateAuth function
 import Link from "next/link";
 import { ReactNode } from "react";
 import { useUser } from "@/hooks/useUser";
+import FileUpload from "@/components/FileUpload";
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true); // To handle loading state
@@ -57,9 +58,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <header className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-semibold text-gray-800">Welcome back, {user?.first_name}</h1>
           <div className="flex items-center gap-4">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              Upload File
-            </button>
+          <FileUpload />
             <div className="relative">
               <button className="text-gray-600 hover:text-gray-800">
                 <i className="fas fa-bell"></i>
