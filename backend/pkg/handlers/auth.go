@@ -9,6 +9,7 @@ import (
 
 // AuthRequest is the structure for incoming authentication requests
 type AuthRequest struct {
+	ID        string `json:"user_id"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 	FirstName string `json:"first_name"`
@@ -25,7 +26,8 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a new user with additional fields
-	user := models.User{
+	user := models.UserEntity{
+		ID:        req.ID,
 		Username:  req.Username,
 		Password:  req.Password,
 		FirstName: req.FirstName,
@@ -53,7 +55,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a user object for login
-	user := models.User{
+	user := models.UserEntity{
 		Email:    req.Email,
 		Password: req.Password,
 	}
@@ -80,6 +82,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"message":   "Login successful",
 		"token":     token,
+		"user_id":   user.ID,
 		"username":  user.Username,
 		"lastName":  user.LastName,
 		"firstName": user.FirstName,

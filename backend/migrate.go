@@ -37,7 +37,7 @@ func initDB() (*gorm.DB, error) {
 // Migrate models to create tables in the database
 func migrate(db *gorm.DB) error {
 	// Automatically create tables based on the models
-	err := db.AutoMigrate(&models.User{}, &models.File{})
+	err := db.AutoMigrate(&models.UserEntity{}, &models.FileModel{})
 	if err != nil {
 		return fmt.Errorf("failed to auto migrate models: %v", err)
 	}

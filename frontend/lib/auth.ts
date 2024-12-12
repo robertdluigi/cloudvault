@@ -27,6 +27,7 @@ export const login = async (data: LoginData) => {
       localStorage.setItem("authToken", response.data.token);
 
       return {
+        id: response.data.user_id,
         username: response.data.username,
         message: response.data.message,
         token: response.data.token,

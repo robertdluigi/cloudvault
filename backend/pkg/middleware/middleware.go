@@ -25,7 +25,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		// Attach the claims to the request context (this will be available in the next handler)
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, "userID", claims.UserID)
+		ctx = context.WithValue(ctx, "userID", claims.ID)
 		ctx = context.WithValue(ctx, "email", claims.Email)
 
 		// Call the next handler with the new context

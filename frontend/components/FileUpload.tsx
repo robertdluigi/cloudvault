@@ -3,11 +3,15 @@ import axios from "axios";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress"; // Import Progress component
+import { useUser } from "@/hooks/useUser"; // Import useUser hook
 
 const FileUpload = () => {
   const [file, setFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+
+  // Using the useUser hook to get the user id
+  const { user } = useUser();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -29,8 +33,14 @@ const FileUpload = () => {
       return;
     }
 
+    if (!user || !user.user_id) {
+      setUploadStatus("User ID is required");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("user_id", user.user_id); // Use user.id from the hook
 
     try {
       const response = await axios.post("/api/v1/files/upload", formData, {
@@ -78,6 +88,7 @@ const FileUpload = () => {
               Browse files
             </label>
           </div>
+
           {uploadProgress > 0 && (
             <div className="mt-4">
               <Progress value={uploadProgress} className="w-full" />

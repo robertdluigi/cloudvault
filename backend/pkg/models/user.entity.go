@@ -10,8 +10,8 @@ import (
 )
 
 // User represents a user in the system with UUID as the primary key
-type User struct {
-	ID        string `gorm:"type:uuid;primaryKey" json:"id"`
+type UserEntity struct {
+	ID        string `gorm:"type:uuid;primaryKey" json:"user_id"`
 	Username  string `gorm:"unique;not null" json:"username"`
 	Email     string `gorm:"unique;not null" json:"email"`
 	FirstName string `gorm:"not null" json:"first_name"`
@@ -20,37 +20,37 @@ type User struct {
 }
 
 // BeforeCreate is a GORM hook to set the UUID before inserting a new record
-func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
+func (entity *UserEntity) BeforeCreate(tx *gorm.DB) (err error) {
 	// Set UUID before creating the user
-	if u.ID == "" {
-		u.ID = uuid.New().String()
+	if entity.ID == "" {
+		entity.ID = uuid.New().String()
 	}
 	return nil
 }
 
 // Create inserts a new user into the database
-func (u *User) Create() error {
+func (entity *UserEntity) Create() error {
 	// Hash the password before saving
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(entity.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
-	u.Password = string(hashedPassword)
+	entity.Password = string(hashedPassword)
 
 	// Use GORM to insert the user into the database
-	result := db.DB.Create(u)
+	result := db.DB.Create(entity)
 	return result.Error
 }
 
 // Authenticate checks the user's credentials against the database
-func (u *User) Authenticate() bool {
+func (entity *UserEntity) Authenticate() bool {
 	// Fetch the user from the database by username or email
-	var storedUser User
-	result := db.DB.Where("username = ? OR email = ?", u.Username, u.Email).First(&storedUser)
+	var storedUser UserEntity
+	result := db.DB.Where("username = ? OR email = ?", entity.Username, entity.Email).First(&storedUser)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
-			log.Println("User not found:", u.Username)
+			log.Println("User not found:", entity.Username)
 		} else {
 			log.Println("Error authenticating user:", result.Error)
 		}
@@ -58,13 +58,13 @@ func (u *User) Authenticate() bool {
 	}
 
 	// Compare the provided password with the stored hashed password
-	err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(u.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(entity.Password))
 	return err == nil
 }
 
 // Create GetProfileByEmail function
-func GetProfileByEmail(email string) (User, error) {
-	var user User
+func GetProfileByEmail(email string) (UserEntity, error) {
+	var user UserEntity
 	result := db.DB.Where("email = ?", email).First(&user)
 	return user, result.Error
 }

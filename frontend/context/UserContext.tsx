@@ -4,7 +4,7 @@ import { validateAuth } from "@/lib/auth";
 
 // Define the user interface
 interface User {
-  id: string;
+  user_id: string;
   username: string;
   first_name: string;
   last_name: string;

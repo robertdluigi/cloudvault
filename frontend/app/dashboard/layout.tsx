@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <main className="flex-1 p-8">
         {/* Header */}
         <header className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-semibold text-gray-800">Welcome back, {user?.first_name}</h1>
+          <h1 className="text-3xl font-semibold text-gray-800">Welcome back, {user?.user_id}</h1>
           <div className="flex items-center gap-4">
           <FileUpload />
             <div className="relative">

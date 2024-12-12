@@ -1,18 +1,29 @@
-// file.go
 package handlers
 
 import (
+	"backend/pkg/db"
+	"backend/pkg/models"
 	"encoding/json"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 // UploadFile handles file uploading
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 	// Set a max upload size of 20 MB
 	r.ParseMultipartForm(20 << 20)
+
+	// Extract UserID from the form
+	userID := r.FormValue("user_id")
+	if userID == "" {
+		http.Error(w, "UserID is required", http.StatusBadRequest)
+		return
+	}
 
 	// Validate if a file is provided
 	file, header, err := r.FormFile("file")
@@ -53,8 +64,33 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dst.Close()
 
-	if _, err := io.Copy(dst, file); err != nil {
+	// Get file size
+	fileSize, err := io.Copy(dst, file)
+	if err != nil {
 		http.Error(w, "Failed to write the file", http.StatusInternalServerError)
+		return
+	}
+
+	// Generate AccessKey and ID
+	accessKey := uuid.New().String()
+	fileID := uuid.New().String()
+
+	// File details
+	fileDetails := models.FileModel{
+		ID:        fileID,
+		UserID:    userID,
+		AccessKey: accessKey,
+		FileType:  fileType,
+		FileURL:   filePath,
+		FileName:  header.Filename,
+		FileSize:  int(fileSize),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	// Save file details in the database
+	if err := db.DB.Create(&fileDetails).Error; err != nil {
+		http.Error(w, "Failed to save file details to the database", http.StatusInternalServerError)
 		return
 	}
 
@@ -62,6 +98,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	response := map[string]string{
 		"message": "File uploaded successfully",
 		"path":    filePath,
+		"id":      fileID,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

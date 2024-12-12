@@ -16,16 +16,16 @@ var SecretKey = []byte("CLOUDVAULT-SECRET-JWT-KEY-DECQWKE53SKTEWSKKDUESJDN")
 
 // Claims structure for JWT token claims
 type Claims struct {
-	UserID string `json:"user_id"`
-	Email  string `json:"email"`
+	ID    string `json:"user_id"`
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
 // GenerateJWT generates a JWT token for a user
 func GenerateJWT(userID, email string) (string, error) {
 	claims := Claims{
-		UserID: userID,
-		Email:  email,
+		ID:    userID,
+		Email: email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
 			Issuer:    "cloudvault",
@@ -118,7 +118,7 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 
 	// Respond with user information
 	response := map[string]interface{}{
-		"user_id":    claims.UserID,
+		"user_id":    user.ID,
 		"email":      claims.Email,
 		"username":   user.Username,
 		"first_name": user.FirstName,
