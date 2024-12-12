@@ -1,16 +1,20 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress"; // Import Progress component
-import { useUser } from "@/hooks/useUser"; // Import useUser hook
+'use client';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { useUser } from '@/hooks/useUser';
+import { useToast } from '@/hooks/use-toast';
+import FileList from '@/components/FileList';
 
-const FileUpload = () => {
+const FileUpload = ({ onFileUploaded }: { onFileUploaded: (file: any) => void }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<string>("");
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-
-  // Using the useUser hook to get the user id
+  const [progress, setProgress] = useState<number>(0);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
   const { user } = useUser();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,40 +33,75 @@ const FileUpload = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      setUploadStatus("No file selected");
+      toast({ title: 'No file selected', variant: 'destructive' });
       return;
     }
 
     if (!user || !user.user_id) {
-      setUploadStatus("User ID is required");
+      toast({ title: 'User ID is required', variant: 'destructive' });
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("user_id", user.user_id); // Use user.id from the hook
+    formData.append('file', file);
+    formData.append('user_id', user?.user_id);
+
+    setUploading(true);
+    setError(null);
+    setProgress(0);
+
+    // Optimistically add the file to the list of files
+    const optimisticFile = {
+      id: Date.now().toString(),
+      user_id: user.user_id,
+      file_type: file.type,
+      file_name: file.name,
+      file_size: file.size,
+      file_url: URL.createObjectURL(file), // Use a temporary URL
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    
+    onFileUploaded(optimisticFile); // Optimistically update parent component
 
     try {
-      const response = await axios.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (progressEvent) => {
-          const total = progressEvent.total || 0;
-          const percentCompleted = Math.round((progressEvent.loaded / total) * 100);
-          setUploadProgress(percentCompleted);
+      const response = await axios.post('/api/v1/files/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (event) => {
+          if (event.total) {
+            setProgress(Math.round((100 * event.loaded) / event.total));
+          }
         },
       });
-      setUploadStatus(response.data.message);
-    } catch (error: any) {
-      setUploadStatus("Upload failed");
-      console.error(error);
+
+      // On success, update the file URL with the server's response
+      optimisticFile.file_url = response.data.file_url;
+      toast({
+        title: 'File uploaded successfully!',
+        description: 'Your file was uploaded successfully.',
+        variant: 'default',
+      });
+      setDialogOpen(false);
+      setFile(null);
+    } catch (err) {
+      setError('There was an error uploading your file.');
+      toast({
+        title: 'Upload failed',
+        description: 'There was an error uploading your file.',
+        variant: 'destructive',
+      });
+      // If upload fails, remove the optimistic file
+      onFileUploaded(null);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
     <div>
-      <Dialog>
+      <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
-          <Button>Upload File</Button>
+          <Button onClick={() => setDialogOpen(true)}>Upload File</Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
@@ -89,16 +128,16 @@ const FileUpload = () => {
             </label>
           </div>
 
-          {uploadProgress > 0 && (
+          {uploading && (
             <div className="mt-4">
-              <Progress value={uploadProgress} className="w-full" />
-              <p className="mt-2 text-center text-sm text-gray-600">{uploadProgress}%</p>
+              <Progress value={progress} className="w-full" />
+              <p className="mt-2 text-center text-sm text-gray-600">{progress}%</p>
             </div>
           )}
+
           <div className="mt-4 flex justify-end">
             <Button onClick={handleUpload}>Upload</Button>
           </div>
-          {uploadStatus && <p className="mt-4 text-center text-gray-600">{uploadStatus}</p>}
         </DialogContent>
       </Dialog>
     </div>

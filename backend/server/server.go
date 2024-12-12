@@ -25,6 +25,7 @@ func Start() {
 	router.HandleFunc("/api/v1/auth/login", handlers.Login).Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/auth/validate", auth.Validate).Methods(http.MethodGet)
 	router.HandleFunc("/api/v1/files/upload", handlers.UploadFile).Methods(http.MethodPost)
+	router.HandleFunc("/api/v1/files/{userID}", handlers.GetFilesByUserID).Methods(http.MethodGet)
 
 	// Configure CORS
 	corsConfig := cors.New(cors.Options{

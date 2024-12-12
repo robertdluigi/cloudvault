@@ -1,15 +1,20 @@
-// components/File.tsx
-import { File as FileIcon, FileText, Image, Music, Video } from "lucide-react"; // Import icons from lucide-react
+'use client';
+import { File as FileIcon, FileText, Image, Music, Video, MoreHorizontal, Download, Trash, Share } from "lucide-react"; // Import icons from lucide-react
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
 import { useState } from "react";
 import React from "react";
 
 interface FileProps {
   fileData: {
-    fileType: string;
-    fileName: string;
-    fileSize: number;
-    fileId: string;
+    id: string;
+    user_id: string;
+    access_key: string;
+    file_type: string;
+    file_url: string;
+    file_name: string;
+    file_size: number;
+    created_at: string;
+    updated_at: string;
   };
 }
 
@@ -66,25 +71,34 @@ const File = ({ fileData }: FileProps) => {
       {/* Left section - File Icon and Name */}
       <div className="flex items-center space-x-4">
         <div className="text-xl text-white">
-          {renderIcon(fileData.fileType)}
+          {renderIcon(fileData.file_type)}
         </div>
         <div className="flex flex-col">
-          <span className="text-sm text-gray-300 truncate">{fileData.fileName}</span>
-          <span className="text-xs text-gray-500">{formatFileSize(fileData.fileSize)}</span>
+          <span className="text-sm text-gray-300 truncate">{fileData.file_name}</span>
+          <span className="text-xs text-gray-500">{formatFileSize(fileData.file_size)}</span>
         </div>
       </div>
 
-      {/* Three dots (actions) menu */}
+      {/* More Horizontal Icon and Actions Menu */}
       <DropdownMenu>
-        <DropdownMenuTrigger className="text-gray-400 hover:text-white cursor-pointer">
-          <div className="w-5 h-5 bg-gray-700 rounded-full flex items-center justify-center">
-            <span className="text-xs">...</span>
+        <DropdownMenuTrigger className="text-gray-200 hover:text-white cursor-pointer">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center">
+            <MoreHorizontal size={32} />
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="bg-gray-800 text-white rounded-lg shadow-lg">
-          <DropdownMenuItem onClick={handleDownload}>Download</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
-          <DropdownMenuItem onClick={handleShare}>Share</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDownload} className="flex items-center space-x-2">
+            <Download size={16} />
+            <span>Download</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDelete} className="flex items-center space-x-2">
+            <Trash size={16} />
+            <span>Delete</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleShare} className="flex items-center space-x-2">
+            <Share size={16} />
+            <span>Share</span>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

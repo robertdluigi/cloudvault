@@ -21,6 +21,20 @@ type FileModel struct {
 	User      UserEntity `gorm:"foreignkey:UserID" json:"user"` // The user who uploaded the file
 }
 
+// FileResponse represents the response structure for a file
+
+type FileResponse struct {
+	ID        string `json:"id"`
+	UserID    string `json:"user_id"`
+	AccessKey string `json:"access_key"`
+	FileType  string `json:"file_type"`
+	FileURL   string `json:"file_url"`
+	FileName  string `json:"file_name"`
+	FileSize  int    `json:"file_size"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 // BeforeCreate is a GORM hook to set the UUID before inserting a new record
 func (entity *FileModel) BeforeCreate(tx *gorm.DB) (err error) {
 	if entity.ID == "" {
