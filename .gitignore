@@ -12,7 +12,7 @@ yarn-error.log*
 
 # Upload folder
 
-.uploads/
+/uploads/
 
 # TypeScript build output (if applicable)
 out/
