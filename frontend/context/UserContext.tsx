@@ -9,7 +9,7 @@ interface User {
   first_name: string;
   last_name: string;
   email: string;
-  [key: string]: any; // Add other fields as needed
+  [key: string]: any;
 }
 
 interface UserContextProps {
@@ -45,7 +45,7 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   // Function to logout the user
   const logoutUser = () => {
     setUser(null); // Clear user data locally
-    // Add any other logout logic (e.g., API call to logout)
+    // TODO: Logout user on the server
   };
 
   return (

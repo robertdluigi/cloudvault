@@ -63,7 +63,7 @@ func (entity *UserEntity) Authenticate() bool {
 	return err == nil
 }
 
-// Create GetProfileByEmail function
+// GetProfileByEmail function to get profile by email
 func GetProfileByEmail(email string) (UserEntity, error) {
 	var user UserEntity
 	result := db.DB.Where("email = ?", email).First(&user)
