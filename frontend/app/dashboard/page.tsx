@@ -1,9 +1,21 @@
+// pages/dashboard.tsx
 'use client';
 import { useState } from "react";
 import { logout } from "@/lib/auth"; // Import the logout function
+import FileUpload from "@/components/FileUpload"; // Import FileUpload component
+import { useUser } from "@/hooks/useUser";
+import FileList from "@/components/FileList"; // Import the FileList component
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(false); // Optionally handle loading state for other purposes
+  const { user } = useUser(); // Get the user data
+  
+  // Mock files data (this will eventually be replaced with actual data from the backend)
+  const mockFiles = [
+    { fileId: "1", fileName: "Document 1", fileType: "pdf", fileSize: 1500000 },
+    { fileId: "2", fileName: "Image 1", fileType: "image", fileSize: 2300000 },
+    { fileId: "3", fileName: "Video 1", fileType: "video", fileSize: 50000000 },
+    { fileId: "4", fileName: "Audio 1", fileType: "audio", fileSize: 3500000 },
+  ];
 
   const handleLogout = () => {
     // Call the logout function to clear the token and redirect the user to the login page
@@ -11,63 +23,16 @@ export default function DashboardPage() {
   };
 
   return (
-    <div>
-      {/* File Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {/* File Card 1 */}
-        <div className="bg-white rounded-lg shadow-lg p-6 hover:bg-gray-100 transition-all">
-          <div className="text-center">
-            <div className="bg-blue-500 text-white p-3 rounded-full w-16 h-16 mx-auto mb-4">
-              <i className="fas fa-file-alt text-2xl"></i>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800">Documents</h3>
-            <p className="text-sm text-gray-500">Total Files: 120</p>
-          </div>
-        </div>
-
-        {/* File Card 2 */}
-        <div className="bg-white rounded-lg shadow-lg p-6 hover:bg-gray-100 transition-all">
-          <div className="text-center">
-            <div className="bg-green-500 text-white p-3 rounded-full w-16 h-16 mx-auto mb-4">
-              <i className="fas fa-image text-2xl"></i>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800">Images</h3>
-            <p className="text-sm text-gray-500">Total Files: 45</p>
-          </div>
-        </div>
-
-        {/* File Card 3 */}
-        <div className="bg-white rounded-lg shadow-lg p-6 hover:bg-gray-100 transition-all">
-          <div className="text-center">
-            <div className="bg-yellow-500 text-white p-3 rounded-full w-16 h-16 mx-auto mb-4">
-              <i className="fas fa-video text-2xl"></i>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800">Videos</h3>
-            <p className="text-sm text-gray-500">Total Files: 30</p>
-          </div>
-        </div>
-
-        {/* File Card 4 */}
-        <div className="bg-white rounded-lg shadow-lg p-6 hover:bg-gray-100 transition-all">
-          <div className="text-center">
-            <div className="bg-red-500 text-white p-3 rounded-full w-16 h-16 mx-auto mb-4">
-              <i className="fas fa-audio text-2xl"></i>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800">Audio</h3>
-            <p className="text-sm text-gray-500">Total Files: 10</p>
-          </div>
-        </div>
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
+          Welcome back, {user?.first_name}
+        </h1>
+        <FileUpload /> {/* File upload button */}
       </div>
 
-      {/* Logout Button */}
-      <div className="text-center mt-6">
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-        >
-          Logout
-        </button>
-      </div>
+      {/* File List */}
+      <FileList files={mockFiles} /> {/* Pass mockFiles as prop to FileList */}
     </div>
   );
 }

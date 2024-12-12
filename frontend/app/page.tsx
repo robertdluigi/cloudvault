@@ -1,6 +1,28 @@
+'use client'
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/hooks/useUser"; // Assume this is the hook to get user info
 import Link from "next/link";
 
 export default function Home() {
+  const { user, loading } = useUser(); // Assuming `useUser` gives us the user and loading state
+  const [isRedirecting, setIsRedirecting] = useState(true); // State to handle redirection delay
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      // Redirect if user is logged in
+      router.push("/dashboard");
+    } else {
+      setIsRedirecting(false); // Stop redirecting once user data is available
+    }
+  }, [user, loading, router]);
+
+  // Show loading state until redirect logic is complete
+  if (isRedirecting) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="grid grid-rows-[1fr_1fr_1fr] items-center justify-items-center min-h-screen bg-[#0D1B2A] p-8 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       {/* Hero Section */}
