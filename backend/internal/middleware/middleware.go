@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"backend/pkg/auth"
+	"backend/internal/auth"
 	"context"
 	"net/http"
 )

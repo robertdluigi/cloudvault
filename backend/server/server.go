@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"backend/pkg/auth"
-	"backend/pkg/db"
-	"backend/pkg/handlers"
+	"backend/internal/auth"
+	"backend/internal/db"
+	"backend/internal/handlers"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"

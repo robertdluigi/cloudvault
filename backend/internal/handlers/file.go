@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"backend/pkg/db"
-	"backend/pkg/models"
+	"backend/internal/db"
+	"backend/internal/models"
 	"encoding/json"
 	"io"
 	"net/http"

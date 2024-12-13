@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"backend/pkg/models" // Import the models package where User and File are defined
+	"backend/internal/models" // Import the models package where User and File are defined
 
 	"github.com/joho/godotenv" // godotenv package for loading environment variables
 	"gorm.io/driver/postgres"  // PostgreSQL GORM driver

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"backend/pkg/models"
+	"backend/internal/models"
 
 	"github.com/dgrijalva/jwt-go"
 )

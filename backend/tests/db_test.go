@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"backend/pkg/db"
+	"backend/internal/db"
 
 	"github.com/joho/godotenv"
 )

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"backend/pkg/db"
+	"backend/internal/db"
 	"log"
 
 	"github.com/google/uuid"
