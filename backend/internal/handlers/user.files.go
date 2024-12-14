@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
-// Create GetFilesByUserID function
+// GetFilesByUserID returns a list of files for a specific user
 func GetFilesByUserID(w http.ResponseWriter, r *http.Request) {
 	// Get the user ID from the request
 	vars := mux.Vars(r)
@@ -50,5 +51,60 @@ func GetFilesByUserID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(fileResponses); err != nil {
 		http.Error(w, "Failed to encode files response", http.StatusInternalServerError)
+	}
+}
+
+// DeleteFileByID function deletes a file by its ID
+
+func DeleteFileByID(w http.ResponseWriter, r *http.Request) {
+	// Get the file ID from the request
+	vars := mux.Vars(r)
+	fileID := vars["fileID"]
+
+	// Find the file in the database
+	var file models.FileModel
+	if err := db.DB.Where("id = ?", fileID).First(&file).Error; err != nil {
+		http.Error(w, fmt.Sprintf("File not found: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Delete file from the uploads directory if it exists
+	if file.FileURL != "" && file.FileType != "text/plain" {
+		if err := os.Remove(file.FileURL); err != nil {
+			http.Error(w, fmt.Sprintf("Error deleting file: %v", err), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Delete the file from the database
+	if err := db.DB.Where("id = ?", fileID).Delete(&models.FileModel{}).Error; err != nil {
+		http.Error(w, fmt.Sprintf("Error deleting file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return a success response
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("File deleted successfully"))
+}
+
+// GetFileByID function returns a file by its ID
+
+func GetFileByID(w http.ResponseWriter, r *http.Request) {
+	// Get the file ID from the request
+	vars := mux.Vars(r)
+	fileID := vars["fileID"]
+
+	// Find the file in the database
+	var file models.FileModel
+	if err := db.DB.Where("id = ?", fileID).First(&file).Error; err != nil {
+		http.Error(w, fmt.Sprintf("File not found: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Return the response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(file); err != nil {
+		http.Error(w, "Failed to encode file response", http.StatusInternalServerError)
 	}
 }

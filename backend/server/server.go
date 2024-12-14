@@ -1,12 +1,10 @@
 package server
 
 import (
-	"log"
-	"net/http"
-
-	"backend/internal/auth"
 	"backend/internal/db"
 	"backend/internal/handlers"
+	"log"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -23,9 +21,10 @@ func Start() {
 	// API Routes
 	router.HandleFunc("/api/v1/auth/signup", handlers.SignUp).Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/auth/login", handlers.Login).Methods(http.MethodPost)
-	router.HandleFunc("/api/v1/auth/validate", auth.Validate).Methods(http.MethodGet)
 	router.HandleFunc("/api/v1/files/upload", handlers.UploadFile).Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/files/{userID}", handlers.GetFilesByUserID).Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/files/{fileID}", handlers.GetFileByID).Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/files/delete/{fileID}", handlers.DeleteFileByID).Methods(http.MethodDelete)
 
 	// Configure CORS
 	corsConfig := cors.New(cors.Options{

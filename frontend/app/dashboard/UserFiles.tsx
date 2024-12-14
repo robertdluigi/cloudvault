@@ -18,7 +18,7 @@ type File = {
 };
 
 const UserFiles: React.FC = () => {
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<File[] | null>(null); // Initializing as null
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const { user } = useUser();
@@ -28,7 +28,7 @@ const UserFiles: React.FC = () => {
       axios
         .get(`/api/v1/files/${user.user_id}`)
         .then((response) => {
-          setFiles(response.data);
+          setFiles(response.data); // Set files to response data
           setLoading(false);
         })
         .catch((err) => {
@@ -40,8 +40,13 @@ const UserFiles: React.FC = () => {
 
   const handleFileUploaded = (newFile: File | null) => {
     if (newFile) {
-      setFiles((prevFiles) => [newFile, ...prevFiles]);
+      setFiles((prevFiles) => [newFile, ...(prevFiles || [])]); // Default prevFiles to empty array if null
     }
+  };
+
+  const handleFileDelete = (fileId: string) => {
+    // Remove the deleted file from the list
+    setFiles((prevFiles) => prevFiles?.filter(file => file.id !== fileId) || null);
   };
 
   // Loading or error state
@@ -59,11 +64,11 @@ const UserFiles: React.FC = () => {
         {/* Files list */}
         <div className="w-full flex flex-col gap-4">
           <h2 className="text-2xl font-semibold text-center">Your Files</h2>
-          <div className=" overflow-hidden">
-            {files.length === 0 ? (
+          <div className="overflow-hidden">
+            {(files === null || files.length === 0) ? (
               <p className="text-center text-gray-500 p-4">No files uploaded yet.</p>
             ) : (
-              <FileList files={files} />
+              <FileList files={files} onFileDelete={handleFileDelete} />
             )}
           </div>
         </div>

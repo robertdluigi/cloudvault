@@ -1,129 +1,93 @@
+// backend/internal/auth/auth.go
+
 package auth
 
 import (
-	"encoding/json"
+	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
-
-	"backend/internal/models"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-// Secret key for signing the JWT tokens
-var SecretKey = []byte("CLOUDVAULT-SECRET-JWT-KEY-DECQWKE53SKTEWSKKDUESJDN")
+var secretKey = []byte("CLOUD-VAULT-JWT-SECRET-KEY-QWERTY8Z8Z8Z8")
 
-// Claims structure for JWT token claims
+// Claims struct defines the structure of the JWT claims
 type Claims struct {
-	ID    string `json:"user_id"`
-	Email string `json:"email"`
+	UserID string `json:"user_id"`
+	Email  string `json:"email"`
 	jwt.StandardClaims
 }
 
-// GenerateJWT generates a JWT token for a user
+// GetTokenFromContext extracts the JWT token from the context (assumed to be set by middleware)
+func GetTokenFromContext(ctx context.Context) (string, error) {
+	// Retrieve the token from the context (this can be set in the middleware)
+	token, ok := ctx.Value("token").(string)
+	if !ok {
+		return "", errors.New("no token found in context")
+	}
+	return token, nil
+}
+
+// ExtractTokenFromHeader retrieves the JWT token from the HTTP request header (Authorization)
+func ExtractTokenFromHeader(authorizationHeader string) (string, error) {
+	// Check if the Authorization header starts with "Bearer "
+	if !strings.HasPrefix(authorizationHeader, "Bearer ") {
+		return "", errors.New("authorization header is missing 'Bearer' token")
+	}
+
+	// Extract the token by removing the "Bearer " prefix
+	token := strings.TrimPrefix(authorizationHeader, "Bearer ")
+	return token, nil
+}
+
+// GenerateJWT creates a new JWT token for the user
 func GenerateJWT(userID, email string) (string, error) {
 	claims := Claims{
-		ID:    userID,
-		Email: email,
+		UserID: userID,
+		Email:  email,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
-			Issuer:    "cloudvault",
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+			Issuer:    "your_app_name",
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	tokenString, err := token.SignedString(SecretKey)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
+	return token.SignedString(secretKey)
 }
 
-// ValidateJWT validates the token and returns the user ID and email
+// ValidateJWT checks if the token is valid and returns the claims
 func ValidateJWT(tokenString string) (*Claims, error) {
-	// Parse the token and validate it
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return SecretKey, nil
+		return secretKey, nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return claims, nil
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
 	}
-	return nil, errors.New("invalid token")
+
+	return claims, nil
 }
 
-// SetTokenInCookie sets the JWT in a secure, HttpOnly cookie
+// SetTokenInCookie sets the JWT token in a secure, HTTP-only cookie
 func SetTokenInCookie(w http.ResponseWriter, token string) {
+	// Set cookie expiration time (e.g., 24 hours)
+	expiration := time.Now().Add(24 * time.Hour)
+
+	// Create the cookie
 	http.SetCookie(w, &http.Cookie{
-		Name:     "authToken",                    // Name of the cookie
-		Value:    token,                          // JWT token as value
-		Path:     "/",                            // Cookie valid for the entire site
-		Expires:  time.Now().Add(24 * time.Hour), // Expires in 24 hours
-		HttpOnly: true,                           // Prevent JavaScript access (XSS protection)
-		Secure:   false,                          // Set to true in production when using HTTPS
-		SameSite: http.SameSiteStrictMode,        // Helps prevent CSRF
+		Name:     "auth_token",            // Cookie name
+		Value:    token,                   // JWT token
+		Path:     "/",                     // Available throughout the entire domain
+		Expires:  expiration,              // Expiration time
+		HttpOnly: true,                    // Ensures the cookie is not accessible via JavaScript (prevents XSS attacks)
+		Secure:   true,                    // Ensures the cookie is sent over HTTPS
+		SameSite: http.SameSiteStrictMode, // Ensures the cookie is sent only in requests from the same site
 	})
-}
-
-// GetTokenFromCookie retrieves the JWT from the cookie
-func GetTokenFromCookie(r *http.Request) (string, error) {
-	cookie, err := r.Cookie("authToken")
-	if err != nil {
-		return "", err
-	}
-	return cookie.Value, nil
-}
-
-// ClearTokenInCookie clears the JWT from the cookie
-func ClearTokenInCookie(w http.ResponseWriter) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "authToken", // Same cookie name as before
-		Value:    "",          // Set empty value to clear it
-		Path:     "/",
-		Expires:  time.Now().Add(-time.Hour), // Expire it immediately
-		HttpOnly: true,                       // Prevent JavaScript access
-		Secure:   false,                      // Set to true in production with HTTPS
-		SameSite: http.SameSiteStrictMode,
-	})
-}
-
-// Validate validates the user's JWT from the cookie and returns user information.
-func Validate(w http.ResponseWriter, r *http.Request) {
-	// Retrieve the JWT from the cookie
-	tokenString, err := GetTokenFromCookie(r)
-	if err != nil {
-		http.Error(w, "Authentication required", http.StatusUnauthorized)
-		return
-	}
-
-	// Validate the JWT
-	claims, err := ValidateJWT(tokenString)
-	if err != nil {
-		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
-		return
-	}
-
-	// Retrieve user profile data from the database
-	user, err := models.GetProfileByEmail(claims.Email)
-	if err != nil {
-		http.Error(w, "Failed to retrieve user profile", http.StatusInternalServerError)
-		return
-	}
-
-	// Respond with user information
-	response := map[string]interface{}{
-		"user_id":    user.ID,
-		"email":      claims.Email,
-		"username":   user.Username,
-		"first_name": user.FirstName,
-		"last_name":  user.LastName,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
 }

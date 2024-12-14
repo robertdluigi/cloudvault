@@ -15,9 +15,10 @@ interface FileData {
 
 interface FileListProps {
   files: FileData[] | null; // Allow files to be null
+  onFileDelete: (fileId: string) => void; // Pass onFileDelete function
 }
 
-const FileList = ({ files }: FileListProps) => {
+const FileList = ({ files, onFileDelete }: FileListProps) => {
   if (!files || files.length === 0) {
     return <p>No files available.</p>; // Show message if files is null or empty
   }
@@ -25,7 +26,7 @@ const FileList = ({ files }: FileListProps) => {
   return (
     <div className="space-y-4">
       {files.map((file) => (
-        <File key={file.id} fileData={file} />
+        <File key={file.id} fileData={file} onDelete={onFileDelete} />
       ))}
     </div>
   );

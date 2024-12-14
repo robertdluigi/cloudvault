@@ -1,10 +1,15 @@
+
+import { UserContextProvider } from "@/context/UserContext";
+import client from "@/lib/apolloClient"; // Your Apollo client setup
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { UserContextProvider } from "@/context/UserContext";
-import { Toaster } from "@/components/ui/toaster"
+import { ApolloWrapper } from "./ApolloWrapper";
+
+// Local fonts
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -18,20 +23,24 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "CloudVault",
-  description: "Secure your data, collaborate with teams, and access your files from anywhere. Join now to start protecting your digital life.",
+  description:
+    "Secure your data, collaborate with teams, and access your files from anywhere. Join now to start protecting your digital life.",
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <UserContextProvider>
     <html lang="en">
       <body className="bg-[#0D1B2A] text-gray-900">
-        <Header />
-        <main>{children}</main>
-        <Toaster />
-        <Footer />
+        {/* Wrap everything with both ApolloProvider and UserContextProvider */}
+        <UserContextProvider>
+        <ApolloWrapper>
+            <Header />
+            <main>{children}</main>
+            <Toaster />
+            <Footer />
+          </ApolloWrapper>
+        </UserContextProvider>
       </body>
     </html>
-    </UserContextProvider>
   );
 }

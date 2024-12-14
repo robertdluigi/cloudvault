@@ -7,18 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// File represents a file record in the system
+// FileModel represents a File Object in the database
 type FileModel struct {
-	ID        string     `gorm:"type:uuid;primaryKey" json:"id"`
-	UserID    string     `gorm:"not null" json:"user_id"` // Foreign key to the User model
-	AccessKey string     `json:"access_key"`
-	FileType  string     `gorm:"not null" json:"file_type"`     // The type of the file
-	FileURL   string     `gorm:"not null" json:"file_url"`      // The URL of the file
-	FileName  string     `gorm:"not null" json:"file_name"`     // The name of the file
-	FileSize  int        `json:"file_size"`                     // The size of the file
-	CreatedAt time.Time  `json:"created_at"`                    // Timestamp of when the file was uploaded
-	UpdatedAt time.Time  `json:"updated_at"`                    // Timestamp of when the file was last updated
-	User      UserEntity `gorm:"foreignkey:UserID" json:"user"` // The user who uploaded the file
+	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
+	UserID    string    `gorm:"not null" json:"user_id"` // Foreign key to the User model
+	AccessKey string    `json:"access_key"`
+	FileType  string    `gorm:"not null" json:"file_type"`     // The type of the file
+	FileURL   string    `gorm:"not null" json:"file_url"`      // The URL of the file
+	FileName  string    `gorm:"not null" json:"file_name"`     // The name of the file
+	FileSize  int       `json:"file_size"`                     // The size of the file
+	CreatedAt time.Time `json:"created_at"`                    // Timestamp of when the file was uploaded
+	UpdatedAt time.Time `json:"updated_at"`                    // Timestamp of when the file was last updated
+	User      User      `gorm:"foreignkey:UserID" json:"user"` // The user who uploaded the file
 }
 
 // FileResponse represents the response structure for a file

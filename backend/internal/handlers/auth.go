@@ -26,7 +26,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a new user with additional fields
-	user := models.UserEntity{
+	user := models.User{
 		ID:        req.ID,
 		Username:  req.Username,
 		Password:  req.Password,
@@ -55,7 +55,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a user object for login
-	user := models.UserEntity{
+	user := models.User{
 		Email:    req.Email,
 		Password: req.Password,
 	}
