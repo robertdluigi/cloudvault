@@ -1,5 +1,6 @@
 import axios from "axios";
 import { config } from "./config"; // Import the config
+import { LOGIN_QUERY } from "@/lib/query"; // Import queries
 
 interface LoginData {
   email: string;
@@ -7,69 +8,162 @@ interface LoginData {
 }
 
 interface SignupData {
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   username: string;
   email: string;
   password: string;
 }
 
-// Enable cookies for axios requests
-axios.defaults.withCredentials = true;
+// Define types for GraphQL responses
+interface LoginResponse {
+    auth: {
+      login: {
+        token: string;
+      };
+    };
+}
+
+interface SignupResponse {
+  signup: {
+    message: string;
+    user: {
+      id: string;
+      username: string;
+      email: string;
+    };
+  };
+}
+
+interface ValidateAuthResponse {
+  validateAuth: {
+    isValid: boolean;
+    user: {
+      id: string;
+      username: string;
+      email: string;
+    };
+  };
+}
+
+interface LogoutResponse {
+  logout: {
+    message: string;
+  };
+}
+
+const client = axios.create({
+  baseURL: `${config.API_BASE_URL}/query`,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true, // Enable cookies for cross-origin requests
+});
 
 // Function to login a user
-export const login = async (data: LoginData) => {
+export async function login(data: LoginData): Promise<string> {
   try {
-    const response = await axios.post(`${config.API_BASE_URL}/api/v1/auth/login`, data);
+    const response = await axios.post(`${config.API_BASE_URL}/query`, {
+      query: LOGIN_QUERY,
+      variables: { email: data.email, password: data.password },
+    });
 
-    if (response.data && response.data.token) {
-      // Store the token in localStorage
-      localStorage.setItem("authToken", response.data.token);
-
-      return {
-        id: response.data.user_id,
-        username: response.data.username,
-        message: response.data.message,
-        token: response.data.token,
-      }; // Return login success message and token
-    } else {
-      throw new Error("Unexpected login response");
+    // Check for errors in the response
+    if (response.data.errors) {
+      throw new Error(response.data.errors[0].message);
     }
+
+    // Extract token from the response
+    const token: string = response.data.data.auth.login.token;
+
+    return token;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Login failed");
+    throw new Error(`Login failed: ${error.message}`);
   }
-};
+}
 
 // Function to sign up a user
 export const signup = async (data: SignupData) => {
+  const SIGNUP_MUTATION = `
+    mutation Signup($input: SignupInput!) {
+      signup(input: $input) {
+        message
+        user {
+          id
+          username
+          email
+        }
+      }
+    }
+  `;
+
   try {
-    const response = await axios.post(`${config.API_BASE_URL}/api/v1/auth/signup`, data);
-    return response.data; // Return success message or user info
+    const response = await client.post("", {
+      query: SIGNUP_MUTATION,
+      variables: {
+        input: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          username: data.username,
+          email: data.email,
+          password: data.password,
+        },
+      },
+    });
+
+    const responseData = response.data as { data: SignupResponse };
+    return responseData.data.signup;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Signup failed");
+    throw new Error(error.response?.data?.errors?.[0]?.message || "Signup failed");
   }
 };
 
 // Function to validate the user's session
 export const validateAuth = async () => {
+  const VALIDATE_AUTH_QUERY = `
+    query ValidateAuth {
+      validateAuth {
+        isValid
+        user {
+          id
+          username
+          email
+        }
+      }
+    }
+  `;
+
   try {
-    // Check session validity from the backend
-    const response = await axios.get(`${config.API_BASE_URL}/api/v1/auth/validate`);
-    return response.data; // Return user info or session validity details
+    const response = await client.post("", {
+      query: VALIDATE_AUTH_QUERY,
+    });
+
+    const responseData = response.data as { data: ValidateAuthResponse };
+    return responseData.data.validateAuth;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Session invalid. Please log in.");
+    throw new Error(error.response?.data?.errors?.[0]?.message || "Session invalid. Please log in.");
   }
 };
 
 // Function to logout the user
 export const logout = async () => {
-  try {
-    // Make a request to log out and clear the session
-    await axios.post(`${config.API_BASE_URL}/api/v1/auth/logout`);
+  const LOGOUT_MUTATION = `
+    mutation Logout {
+      logout {
+        message
+      }
+    }
+  `;
 
-    // Clear the local token after logout
-    localStorage.removeItem("authToken");
+  try {
+    const response = await client.post("", {
+      query: LOGOUT_MUTATION,
+    });
+
+    const responseData = response.data as { data: LogoutResponse };
+    localStorage.removeItem("authToken"); // Clear the local token after logout
+    return responseData.data.logout.message;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Logout failed");
+    throw new Error(error.response?.data?.errors?.[0]?.message || "Logout failed");
   }
 };
