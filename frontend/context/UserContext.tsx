@@ -1,15 +1,13 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { validateAuth } from "@/lib/auth";
+import { validateAuth } from "@/lib/auth"; // Ensure this function validates the token and fetches the user data
 
-// Define the user interface
 interface User {
-  user_id: string;
+  id: string;
   username: string;
   first_name: string;
   last_name: string;
   email: string;
-  image: string;
   [key: string]: any;
 }
 
@@ -31,10 +29,16 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userData = await validateAuth();
-        setUser(userData);
+        const token = localStorage.getItem("authToken"); // Get token from localStorage
+        if (token) {
+          // Try to validate auth and get user data
+          const userData = await validateAuth(token); // Pass the token to the validateAuth function
+          setUser(userData); // Assuming the returned data is directly the user object
+        } else {
+          setUser(null); // Clear user if no token is found
+        }
       } catch (error) {
-        setUser(null);
+        setUser(null); // Clear user if auth is invalid
       } finally {
         setLoading(false);
       }
@@ -46,7 +50,8 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
   // Function to logout the user
   const logoutUser = () => {
     setUser(null); // Clear user data locally
-    // TODO: Logout user on the server
+    localStorage.removeItem("authToken"); // Clear auth token
+    // TODO: Call logout API to clear session on the server if necessary
   };
 
   return (

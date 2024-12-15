@@ -17,11 +17,11 @@ interface SignupData {
 
 // Define types for GraphQL responses
 interface LoginResponse {
-    auth: {
-      login: {
-        token: string;
-      };
+  auth: {
+    login: {
+      token: string;
     };
+  };
 }
 
 interface SignupResponse {
@@ -37,12 +37,11 @@ interface SignupResponse {
 
 interface ValidateAuthResponse {
   validateAuth: {
-    isValid: boolean;
-    user: {
-      id: string;
-      username: string;
-      email: string;
-    };
+    id: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    email: string;
   };
 }
 
@@ -75,6 +74,9 @@ export async function login(data: LoginData): Promise<string> {
 
     // Extract token from the response
     const token: string = response.data.data.auth.login.token;
+
+    // Store token in localStorage (or sessionStorage)
+    localStorage.setItem("authToken", token); // Store token for future requests
 
     return token;
   } catch (error: any) {
@@ -119,29 +121,50 @@ export const signup = async (data: SignupData) => {
 };
 
 // Function to validate the user's session
-export const validateAuth = async () => {
+export const validateAuth = async (token: string) => {
+  if (!token) {
+    throw new Error("No token provided");
+  }
+  
   const VALIDATE_AUTH_QUERY = `
     query ValidateAuth {
       validateAuth {
-        isValid
-        user {
-          id
-          username
-          email
-        }
+        id
+        username
+        first_name
+        last_name
+        email
       }
     }
   `;
 
   try {
-    const response = await client.post("", {
-      query: VALIDATE_AUTH_QUERY,
-    });
+    const response = await client.post(
+      "",
+      {
+        query: VALIDATE_AUTH_QUERY,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add token to Authorization header
+        },
+      }
+    );
 
+    // Ensure response contains the expected data structure
     const responseData = response.data as { data: ValidateAuthResponse };
-    return responseData.data.validateAuth;
+
+    // Return the user data if the validation was successful
+    if (responseData.data?.validateAuth) {
+      return responseData.data.validateAuth;
+    } else {
+      throw new Error("No user data found in validation response");
+    }
   } catch (error: any) {
-    throw new Error(error.response?.data?.errors?.[0]?.message || "Session invalid. Please log in.");
+    // Catch and rethrow any error with a more informative message
+    throw new Error(
+      error.response?.data?.errors?.[0]?.message || "Session invalid. Please log in."
+    );
   }
 };
 

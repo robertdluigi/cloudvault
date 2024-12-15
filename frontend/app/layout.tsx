@@ -1,13 +1,10 @@
-
 import { UserContextProvider } from "@/context/UserContext";
-import client from "@/lib/apolloClient"; // Your Apollo client setup
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { ApolloWrapper } from "./ApolloWrapper";
 
 // Local fonts
 const geistSans = localFont({
@@ -33,12 +30,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <body className="bg-[#0D1B2A] text-gray-900">
         {/* Wrap everything with both ApolloProvider and UserContextProvider */}
         <UserContextProvider>
-        <ApolloWrapper>
             <Header />
             <main>{children}</main>
             <Toaster />
             <Footer />
-          </ApolloWrapper>
         </UserContextProvider>
       </body>
     </html>

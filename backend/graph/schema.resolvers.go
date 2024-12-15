@@ -7,8 +7,12 @@ package graph
 import (
 	"backend/graph/generated"
 	"backend/graph/model"
+	"backend/internal/auth"
 	"backend/internal/service"
 	"context"
+	"time"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 // Login is the resolver for the login field.
@@ -21,9 +25,26 @@ func (r *authOpsResolver) Register(ctx context.Context, obj *model.AuthOps, inpu
 	return service.UserRegister(ctx, input)
 }
 
+// Filesize is the resolver for the filesize field.
+func (r *fileResolver) Filesize(ctx context.Context, obj *model.File) (int32, error) {
+	// The `Filesize` field in the model is an int, so we return it as int32 (GraphQL type).
+	return int32(obj.Filesize), nil
+}
+
+// CreatedAt is the resolver for the createdAt field.
+func (r *fileResolver) CreatedAt(ctx context.Context, obj *model.File) (string, error) {
+	// The `CreatedAt` field is a time.Time, so we format it as an RFC3339 string.
+	return obj.CreatedAt.Format(time.RFC3339), nil
+}
+
 // Auth is the resolver for the auth field.
 func (r *mutationResolver) Auth(ctx context.Context) (*model.AuthOps, error) {
 	return &model.AuthOps{}, nil
+}
+
+// UploadFile is the resolver for the uploadFile field.
+func (r *mutationResolver) UploadFile(ctx context.Context, file graphql.Upload, userID string) (*model.File, error) {
+	return service.FileUploadHandler(ctx, file, userID)
 }
 
 // User is the resolver for the user field.
@@ -36,8 +57,21 @@ func (r *queryResolver) Protected(ctx context.Context) (string, error) {
 	return "Success", nil
 }
 
+// ValidateAuth is the resolver for the validateAuth field.
+func (r *queryResolver) ValidateAuth(ctx context.Context) (*model.User, error) {
+	return auth.ValidateAuth(ctx)
+}
+
+// UserFiles is the resolver for the userFiles field.
+func (r *queryResolver) UserFiles(ctx context.Context, id string) ([]*model.File, error) {
+	return service.UserFiles(ctx, id)
+}
+
 // AuthOps returns generated.AuthOpsResolver implementation.
 func (r *Resolver) AuthOps() generated.AuthOpsResolver { return &authOpsResolver{r} }
+
+// File returns generated.FileResolver implementation.
+func (r *Resolver) File() generated.FileResolver { return &fileResolver{r} }
 
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
@@ -46,5 +80,6 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type authOpsResolver struct{ *Resolver }
+type fileResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

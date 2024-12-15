@@ -1,35 +1,44 @@
-"use client";
-import React, { use, useState } from "react";
-import { Label } from "@/components/ui/label";
+'use client';
 import { Input } from "@/components/ui/input";
+import { useUserContext } from "@/context/UserContext"; // Import the UserContext
+import { login, validateAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { Label } from "@radix-ui/react-label";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
-import { login } from "@/lib/auth"; // Import the login function from auth.ts
-import { useRouter } from "next/navigation";
-export default function LoginFormDemo() {
+import { useRouter } from 'next/navigation'; // Import the router for navigation
+import { useState } from "react";
+
+export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
+  // Get setUser from the context
+  const { setUser } = useUserContext();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Prepare the data for the login request
-    const loginData = {
-      email,
-      password,
-    };
+    const loginData = { email, password };
 
     try {
-      // Use the login function from auth.ts
-      const response = await login(loginData);
-
-      // Handle success
+      // Call the login API to get the token
+      const response = await login(loginData);  // Replace with actual login function
       console.log("Login successful:", response);
-      router.push("/dashboard");
+
+
+      const token = localStorage.getItem("authToken"); // Get token from localStorage
+
+      // Use validateAuth to validate the token and get user data
+      const validatedUserData = await validateAuth(token || ""); // Validate the token
+
+      // Update the user context with validated user data
+      setUser(validatedUserData);
+      // Now navigate to the home page
+      router.push("/");
+
     } catch (error: any) {
-      // Handle error
       setErrorMessage(error.message || "Login failed. Please try again.");
       console.error("Error during login:", error);
     }
@@ -104,7 +113,7 @@ export default function LoginFormDemo() {
       </form>
     </div>
   );
-}
+};
 
 const BottomGradient = () => {
   return (

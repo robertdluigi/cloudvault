@@ -5,8 +5,11 @@ import (
 	"backend/graph/model"
 	"backend/tools"
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 )
 
@@ -51,4 +54,38 @@ func UserGetByEmail(ctx context.Context, email string) (*model.User, error) {
 	}
 
 	return &user, nil
+}
+
+func ValidateAuth(ctx context.Context) (*model.User, error) {
+	// Retrieve the token from the context
+	tokenString, err := tools.GetAuthTokenFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract token from context: %w", err)
+	}
+
+	// Validate the token
+	token, err := JwtValidate(ctx, tokenString)
+	if err != nil {
+		return nil, fmt.Errorf("invalid token: %w", err)
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token claims")
+	}
+
+	// Retrieve user ID from claims
+	userID, ok := claims["id"].(string)
+	if !ok {
+		return nil, errors.New("invalid token claims: missing user ID")
+	}
+
+	// Retrieve the user from the database or service
+	user, err := UserGetByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve user: %w", err)
+	}
+
+	return user, nil
 }

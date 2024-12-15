@@ -3,14 +3,13 @@ import File from "./File"; // Import the File component
 
 interface FileData {
   id: string;
+  filename: string;
+  mimetype: string;
+  encoding: string;
+  filesize: number;
+  url: string;
   user_id: string;
-  access_key: string;
-  file_type: string;
-  file_url: string;
-  file_name: string;
-  file_size: number;
   created_at: string;
-  updated_at: string;
 }
 
 interface FileListProps {
