@@ -7,5 +7,5 @@ This project was built to help me learn Golang and enhance my backend developmen
 ## Tech Stack
 
 - **Frontend:** React, Next.js, TailwindCSS, Shadcn UI
-- **Backend:** Golang
+- **Backend:** Golang, GraphQL
 - **Database:** PostgreSQL 17 @NeonDB with GORM
