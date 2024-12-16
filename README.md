@@ -73,7 +73,7 @@ go mod tidy
 go run server.go
 ```
 
-#### The backend will be available at http://localhost:8080
+The backend will be available at http://localhost:8080
 
 ### 3. Frontend Setup
 
@@ -94,6 +94,5 @@ npm install
 ```bash
 npm run dev
 ```
-
-#### The frontend will be available at http://localhost:3000
+The frontend will be available at http://localhost:3000
 
