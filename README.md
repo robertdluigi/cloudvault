@@ -96,3 +96,100 @@ npm run dev
 ```
 The frontend will be available at http://localhost:3000
 
+## Docker Setup
+
+To containerize and rup the app using Docker
+
+### 1. Build Docker Images
+
+**Backend:**
+
+```bash
+docker build -t cloudvault-backend ./backend
+```
+
+**Frontend:**
+
+```bash
+docker build -t cloudvault-frontend ./frontend
+```
+
+### 2. Run Docker Containers
+
+```bash
+docker network create cloudvault-network
+
+docker run -d --name cloudvault-backend --network cloudvault-network -o 8080:8080 cloudvault-backend
+
+docker run -d --name cloudvault-frontend --network cloudvault-network -o 3000:3000 cloudvault-frontend
+```
+
+Access the app at http://localhost:3000
+
+## Kubernetes Deployment (IBM Cloud)
+
+### 1. Kubernetes Cluster
+
+#### 1. Login to IBM Cloud
+
+```bash
+ibmcloud login
+```
+
+#### 2. Create a free-tier Kubernetes cluster
+
+```bash
+ibmcloud ks create cluster free --name cloudvault-cluster --zone <zone-name>
+```
+
+#### 3. Configure kubectl for the cluster
+
+```bash
+ibmcloud ks config --cluster cloudvault-cluster
+```
+
+### 2. Apply Kubernetes Resources
+
+#### 1. Build Docker Images and push them to a container registry (e.g. Docker Hub or IBM Container Registry):
+
+```bash
+docker tag cloudvault-backend <your-registry>/cloudvault-backend:latest
+docker push <your registry>/cloudvault-backend:latest
+
+docker tag cloudvault-frontend <your-registry>/cloudvault-frontend:latest
+docker push <your registry>/cloudvault-frontend:latest
+```
+
+#### 2. Deploy the backend and frontend to Kubernetes using the provided manifests
+
+```bash
+kubectl apply -f k8s/backend=deployment.yml
+kubectl apply -f k8s/backend-service.yml
+
+kubectl apply -f k8s/frontend-deployment.yml
+kubectl apply -f k8s/frontend-service.yml
+```
+
+#### 3. Verify the deployments
+
+```bash
+kubectl get pods
+kubectl get svc
+```
+
+#### 4. Access the app via the EXTERNAL-IP or YOUR-DOMAIN provided by the frontend service
+
+```bash
+http://<EXTERNAL-IP>
+```
+
+```bash
+http://<YOUR-DOMAIN>
+```
+
+## Future Improvements
+
+**Third-Party Cloud Storage**
+**User activity and file usage**
+**Real-time collaboration on shared files**
+**File Encryption**
