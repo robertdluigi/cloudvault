@@ -169,6 +169,7 @@ kubectl apply -f k8s/backend-service.yml
 kubectl apply -f k8s/frontend-deployment.yml
 kubectl apply -f k8s/frontend-service.yml
 ```
+**Before running this, open the files and edit the registry name and the environment variables**
 
 #### 3. Verify the deployments
 

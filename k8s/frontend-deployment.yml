@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: cloudvault-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloudvault-frontend
+  template:
+    metadata:
+      labels:
+        app: cloudvault-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: <your-registry>/cloudvault-frontend:latest
+        ports:
+        - containerPort: 3000

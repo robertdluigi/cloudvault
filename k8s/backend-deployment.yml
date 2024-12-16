@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: cloudvault-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloudvault-backend
+  template:
+    metadata:
+      labels:
+        app: cloudvault-backend
+    spec:
+      containers:
+      - name: backend
+        image: <your-registry>/cloudvault-backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_URL
+          value: "<PostgreSQL-connection-string>"
+        - name: JWT_SECRET
+          value: "<your-jwt-secret>"
+        - name: PORT
+          value: "8080"
