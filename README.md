@@ -189,7 +189,7 @@ http://<YOUR-DOMAIN>
 
 ## Future Improvements
 
-**Third-Party Cloud Storage**
+*Third-Party Cloud Storage*
 **User activity and file usage**
 **Real-time collaboration on shared files**
 **File Encryption**
