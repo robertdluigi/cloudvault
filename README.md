@@ -46,7 +46,7 @@ Follow the steps below to set up CloudVault locally or on a Kubernetes cluster:
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/cloudvault.git
+git clone https://github.com/robertdluigi/cloudvault.git
 cd cloudvault
 ```
 
