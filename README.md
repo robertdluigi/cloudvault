@@ -9,7 +9,7 @@ This project was built to help me learn Golang and enhance my backend developmen
 ## Tech Stack
 
 - **Frontend:** React, Next.js, TailwindCSS, Shadcn UI  
-- **Backend:** Golang (1.28), GraphQL  
+- **Backend:** Golang (1.22), GraphQL  
 - **Database:** PostgreSQL 17 @ NeonDB (using GORM)  
 
 ---
@@ -31,7 +31,7 @@ Before setting up the app, ensure you have the following installed:
 2. **kubectl** (for Kubernetes management, if deploying to a cluster)  
 3. **IBM Cloud CLI** (for managing IBM Kubernetes cluster)  
 4. **Node.js** (latest version, compatible with Next.js)  
-5. **Golang 1.28**  
+5. **Golang 1.22**  
 
 ---
 
